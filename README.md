@@ -4,10 +4,7 @@ End-to-end data analytics project on 25,050 raw e-commerce transactions, using *
 
 [dashboard.png]
 
-
-> **Live Interactive Dashboard:** Open [`dashboard.html`](file:///Users/shivanshu/Downloads/AI%20Data%20Analyst/Important%20Projects/%20Project%202%20(Vibe%20Analysis)/dashboard.html) in any browser, or view it live at `https://shivanshu-sharma1376.github.io/Vibe-Analysis-Ecommerce/dashboard.html` (once GitHub Pages is enabled).
-
----
+> **Live Interactive Dashboard:** View the [Live Interactive Dashboard](https://shivanshu-sharma1376.github.io/Vibe-Analysis-Ecommerce/dashboard.html) (once GitHub Pages is enabled) or open `dashboard.html` locally in any browser.
 
 ## Overview
 
@@ -23,111 +20,57 @@ The goal is to demonstrate an AI-assisted ("Vibe Analysis") data workflow—goin
 | Item | Detail |
 |---|---|
 | Raw files | 4 CSVs (`orders_raw.csv`, `customers_raw.csv`, `products_raw.csv`, `regions_raw.csv`) |
-| Raw rows | 25,050 orders, 2,010 customers, 100 products, 20 regions |
-| Clean star schema | 24,895 orders (`fact_sales`), 2,000 customers, 100 products, 20 regions, 731 dates |
-| Time period | January 2024 – December 2025 |
-| Data quality issues found | 60 exact duplicate rows (50 orders, 10 customers), 10 `'not_a_date'` order dates, 95 blank foreign keys (60 `customer_id`, 35 `product_id`), 15 negative-quantity return rows, 12 misformatted/mismatched product categories, and 12,562 orders dated before customer `signup_date` |
+| Raw orders | 25,050 rows (cleaned to **24,895** net valid orders) |
+| Customers | 2,000 unique customers across 4 segments |
+| Products | 100 SKUs across 5 categories |
+| Regions | 20 states grouped into 5 regions (North, East, South, West, Central) |
+| Timeframe | January 1, 2024 – December 31, 2025 (731 dates) |
 
 ## Tools
 
-- **Gemini**: data profiling, data-quality auditing, cleaning, star-schema modeling, and business analysis
-- **HTML / JavaScript**: standalone interactive dashboard (`dashboard.html`) with dynamic filtering
+- **Gemini**: data profiling, cleaning, star-schema design, business analysis, and dashboard generation
+- **HTML / Chart.js**: standalone interactive dashboard (`dashboard.html`)
 
 ## Steps
 
-### 1. Data Profiling (Gemini)
-- Inspected all four raw CSV files for row counts, grain, primary keys, foreign-key integrity, missing values, duplicates, and math/date anomalies
-- Verified that `profit = sales_amount - cost_amount` held for normal orders, while 15 negative-quantity rows (`is_return`) had mismatched profit formulas
-- Identified 571 positive-quantity orders with negative profit caused by `15%`–`20%` discounts
+### 1. Data Profiling & Cleaning
+- Profiled all 4 raw CSVs for duplicates, invalid dates, orphan foreign keys, and category mismatches
+- **`dim_customer.csv`** (2,000 rows): Removed 10 exact duplicate `customer_id` rows, standardized `signup_date` to `YYYY-MM-DD`, and backdated 1,856 signup dates to `min(signup_date, earliest_valid_order_date)` to resolve 12,562 pre-signup orders
+- **`dim_product.csv`** (100 rows): Standardized `category` casing/whitespace (`8` raw variants → `5` canonical categories) and aligned 12 mismatched `category` rows to their `sub_category`
+- **`dim_region.csv`** (20 rows): Verified 0 nulls and 0 duplicates across all 20 state/region records
+- **`fact_sales.csv`** (24,895 rows): Removed 50 exact duplicates, quarantined 10 `'not_a_date'` rows, removed 95 rows with blank `customer_id` or `product_id`, standardized `order_date` to `YYYY-MM-DD`, and flagged 15 negative-quantity return rows with `is_return`
+- **`dim_date.csv`** (731 rows): Generated calendar dimension from unique valid `order_date` values (`2024-01-01` – `2025-12-31`)
 
-### 2. Data Cleaning & Star Schema Modeling (Gemini)
-- **Customers (`dim_customer.csv`):** Removed 10 exact duplicate rows (2,010 → 2,000) and backdated 1,856 `signup_date` values to each customer's earliest valid order date (resolving all 12,562 pre-signup orders)
-- **Products (`dim_product.csv`):** Trimmed whitespace and standardized casing (`8` raw labels → `5` canonical categories), and realigned 12 mismatched `category` rows to match their `sub_category`
-- **Regions (`dim_region.csv`):** Validated uniqueness and state-to-region mapping across all 20 rows (`0` nulls, `0` duplicates)
-- **Date (`dim_date.csv`):** Generated a 731-row calendar dimension (`2024-01-01` – `2025-12-31`) with `date_key`, `date`, `day`, `month`, `month_name`, `quarter`, and `year`
-- **Fact Sales (`fact_sales.csv`):** Removed 50 exact duplicates, excluded 10 `'not_a_date'` rows, deleted 95 rows with blank `customer_id` or `product_id`, standardized `order_date` to `YYYY-MM-DD`, and flagged 15 negative-quantity rows with `is_return = True`
+### 2. Star-Schema Validation & Business Analysis
+Verified 0 nulls, 100% unique primary keys, and 0 orphan foreign keys across all 5 tables, then analyzed:
+1. Overall net revenue, net profit, profit margin, order volume, and customer count
+2. Month-over-month revenue and profit trends across 2024–2025
+3. Net profit by region and net revenue by product category
+4. Top 10 products by net revenue and margin efficiency
 
-```mermaid
-erDiagram
-    dim_region ||--o{ fact_sales : "region_id"
-    dim_date ||--o{ fact_sales : "order_date -> date"
-    dim_customer ||--o{ fact_sales : "customer_id"
-    dim_product ||--o{ fact_sales : "product_id"
-
-    fact_sales {
-        string order_id PK
-        date order_date FK
-        string customer_id FK
-        string product_id FK
-        string region_id FK
-        int quantity
-        float discount
-        float sales_amount
-        float cost_amount
-        float profit
-        boolean is_return
-    }
-
-    dim_region {
-        string region_id PK
-        string state
-        string city
-        string region
-    }
-
-    dim_date {
-        int date_key PK
-        date date
-        int day
-        int month
-        string month_name
-        string quarter
-        int year
-    }
-
-    dim_customer {
-        string customer_id PK
-        string customer_name
-        string gender
-        int age
-        string customer_segment
-        date signup_date
-    }
-
-    dim_product {
-        string product_id PK
-        string product_name
-        string category
-        string sub_category
-        float cost
-        float selling_price
-    }
-```
-
-### 3. Dashboard (HTML)
-Built a standalone interactive HTML dashboard (`dashboard.html`) with dropdown filters for **Year**, **Region**, **Category**, and **Returns** (`Include` / `Exclude`). It displays 4 KPI cards (Total Revenue, Total Profit, Total Orders, Unique Customers), Monthly Sales & Profit Trend, Revenue by Category, Profit by Region, and Top 10 Products by Revenue.
+### 3. Dashboard (`dashboard.html` & `dashboard.png`)
+Built a standalone interactive HTML dashboard with KPI cards, a 24-month trend chart, category and regional breakdowns, top products, and dynamic filters, plus a static `dashboard.png` preview.
 
 ## Results
 
 | Metric | Finding |
 |---|---|
-| Total net revenue | **29.36M** (`29,364,273.78`) |
-| Total net profit | **6.73M** (`6,729,974.81`) |
+| Total net revenue | **$29.36M** (`$29,364,273.78`, incl. 15 returns) |
+| Total net profit | **$6.73M** (`$6,729,974.81`) |
 | Overall profit margin | **22.92%** |
-| Total orders & customers | **24,895** orders across **2,000** unique customers |
-| Top category by revenue | **Clothing** (**7.23M**), followed by **Home & Kitchen** (**7.08M**) |
-| Top region by profit | **North** (**1.71M**), closely followed by **East** (**1.69M**) and **South** (**1.69M**) |
-| Lowest region by profit | **Central** (**0.32M**, 1 state) |
-| Top product by revenue | **Kids Product 98** (`P0098`: **823.5K** revenue, **38.52%** margin) |
-| Peak revenue month | **December 2025** (**1,320,182.05**) |
-| Peak profit month | **August 2025** (**302,557.59** at **24.11%** margin) |
-| High-revenue, low-margin SKUs | **24 products** earn above-average revenue (`>= 293.6K`) at below-average margins (`< 21.81%`), led by `Paper Product 24` (**7.90%**) and `Appliances Product 40` (**8.28%**) |
+| Total orders & units | **24,895** orders (**47,863** net units sold) |
+| Unique customers | **2,000** |
+| Peak revenue month | **2025-12** (**$1.32M** revenue, **$299.5K** profit) |
+| Peak profit month | **2025-08** (**$1.25M** revenue, **$302.6K** profit) |
+| Top category by revenue | **Clothing** (**$7.23M**), followed by **Home & Kitchen** (**$7.08M**) |
+| Top region by profit | **North** (**$1.71M**), closely followed by **East** (**$1.69M**) and **South** (**$1.69M**) |
+| Top product by revenue | **Kids Product 98** (`Clothing` — **$823.5K** revenue, **38.52%** margin) |
 
 ## Business Recommendations
 
-- **Reprice or cap discounts on low-margin SKUs:** Review pricing and `15%`–`20%` discount rules on high-volume, thin-margin items like `Paper Product 24` (**7.90%**), `Appliances Product 40` (**8.28%**), and `Cookware Product 89` (**9.57%**).
+- **Reprice or cap discounts on low-margin SKUs:** Review pricing and `15%`–`20%` discount rules on high-volume, thin-margin items like `Paper Product 94` (**15.09%** margin).
 - **Double down on top-performing categories:** Focus inventory and promotional spend on **Clothing** and **Home & Kitchen**, which drive nearly half of total revenue.
-- **Investigate Central region coverage:** Central lags far behind other regions (**0.32M** profit) because it covers only one state; evaluate expansion opportunities.
+- **Investigate Central region coverage:** Central lags far behind other regions (**$0.32M** profit) because it covers only one state; evaluate expansion opportunities.
 - **Standardize return accounting:** Track `is_return = True` transactions separately so gross sales and net return-adjusted profit are reported consistently.
 
 ## Project Files
@@ -143,9 +86,9 @@ Built a standalone interactive HTML dashboard (`dashboard.html`) with dropdown f
 
 1. Clone the repo
    ```bash
-     git clone https://github.com/Shivanshu-Sharma1376/Vibe-Analysis-Ecommerce.git
-     cd Vibe-Analysis-Ecommerce 
-
+   git clone [https://github.com/Shivanshu-Sharma1376/Vibe-Analysis-Ecommerce.git](https://github.com/Shivanshu-Sharma1376/Vibe-Analysis-Ecommerce.git)
+   cd Vibe-Analysis-Ecommerce
+   ```
 2. Open `dashboard.html` directly in any web browser (no server or extra setup required) to explore all KPIs, charts, and filters.
 
 ## Author
