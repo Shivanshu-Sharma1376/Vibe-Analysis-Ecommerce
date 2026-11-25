@@ -2,7 +2,7 @@
 
 End-to-end data analytics project on 25,050 raw e-commerce transactions, using **Gemini** to perform data profiling, data cleaning, star-schema modeling, business analysis, and to build an interactive **HTML** dashboard.
 
-[dashboard.png]
+[https://github.com/Shivanshu-Sharma1376/Vibe-Analysis-Ecommerce/blob/main/dashboard.png]
 
 
 > **Live Interactive Dashboard:** Open [`dashboard.html`](file:///Users/shivanshu/Downloads/AI%20Data%20Analyst/Important%20Projects/%20Project%202%20(Vibe%20Analysis)/dashboard.html) in any browser, or view it live at `https://shivanshu-sharma1376.github.io/Vibe-Analysis-Ecommerce/dashboard.html` (once GitHub Pages is enabled).
