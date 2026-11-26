@@ -4,7 +4,7 @@ End-to-end data analytics project on 25,050 raw e-commerce transactions, using *
 
 ![Dashboard](dashboard.png)
 
-> **Live Interactive Dashboard:** View the [Live Interactive Dashboard](https://shivanshu-sharma1376.github.io/Vibe-Analysis-Ecommerce/dashboard.html) (once GitHub Pages is enabled) or open `dashboard.html` locally in any browser.
+> **Live Interactive Dashboard:** View the [Live Interactive Dashboard](file:///Users/shivanshu/Downloads/AI%20Data%20Analyst/Important%20Projects/%20Project%202%20(Vibe%20Analysis)/dashboard.html) (once GitHub Pages is enabled) or open `dashboard.html` locally in any browser.
 
 ## Overview
 
