@@ -86,7 +86,7 @@ Built a standalone interactive HTML dashboard with KPI cards, a 24-month trend c
 
 1. Clone the repo
    ```bash
-   git clone [https://github.com/Shivanshu-Sharma1376/Vibe-Analysis-Ecommerce.git](https://github.com/Shivanshu-Sharma1376/Vibe-Analysis-Ecommerce.git)
+   git clone https://github.com/Shivanshu-Sharma1376/Vibe-Analysis-Ecommerce.git
    cd Vibe-Analysis-Ecommerce
    ```
 2. Open `dashboard.html` directly in any web browser (no server or extra setup required) to explore all KPIs, charts, and filters.
